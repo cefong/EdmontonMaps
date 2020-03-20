@@ -147,11 +147,15 @@ int main() {
 
 	// run dijkstra's from start vertex
 	dijkstra(graph, startID, tree);
+	// for (auto iter = tree.begin(); iter != tree.end(); ++iter) {
+	// 	cout << iter->first << " " << iter->second.first
+	// 	<< " " << iter->second.second << endl;
+	// }
 
 	// initialize vector to keep track of waypoints
 	vector <Point> waypoints;
 
-	// initailize node count
+	// initialize node count
 	int nodeCount = 1;
 	int ID = endID;
 	while (ID != startID) {

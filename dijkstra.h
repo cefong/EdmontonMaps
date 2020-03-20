@@ -23,7 +23,6 @@ typedef pair<int, PIL> PIPIL;
 // to implement Dijkstra's algorithm differently, this is here simply because
 // it was used in the lecture for the slower version of Dijkstra's algorithm.
 
-void dijkstra(const WDigraph& graph, int startVertex,
-              unordered_map<int, PIL>& tree);
+void dijkstra(const WDigraph& graph, int startVertex, unordered_map<int, PIL>& tree);
 
 #endif

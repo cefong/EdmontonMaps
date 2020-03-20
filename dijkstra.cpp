@@ -1,6 +1,7 @@
 #include "dijkstra.h"
 #include "heap.h"
 #include <unordered_map>
+#include <iostream>
 
 using namespace std;
 
@@ -20,7 +21,7 @@ void dijkstra(const WDigraph& graph, int startVertex, unordered_map<int, PIL>& t
 	// keys are predecessor vertices and times (int, long long)
 	// items are ID nums (int)
 
-	BinaryHeap<int, PIL> events;
+	BinaryHeap<pair<int, int>, long long> events;
 	long long time;
 	int u, v;
 	// int is the vertex to be found
@@ -28,21 +29,21 @@ void dijkstra(const WDigraph& graph, int startVertex, unordered_map<int, PIL>& t
 	// PIPIL is <int, <int, long long>> in format (v, (u, d))
 	// fire burns from u to v in d time
 
-	events.insert(startVertex, PIL(-1,0));
-	// starting at startVertex, no predecessor (-1) and time 0
-
+	events.insert(make_pair(startVertex, -1), 0);
+	// starting at startVertex, time 0
+	// starting with u = -1 (predecessor)
 	while (events.size() > 0) {
 		// heap stores all neighbours of current vertex and time to each
-		HeapItem<int, PIL> currMin;
+		HeapItem<pair<int, int>, long long> currMin;
 		currMin = events.min();
 		events.popMin();
 
 		// currMin.item is the current ID, = v
 		// currMin.key is the time, = time
 		// u is the predecessor
-		v = currMin.item;
-		u = currMin.key.first;
-		time = currMin.key.second;
+		v = currMin.item.first;
+		u = currMin.item.second;
+		time = currMin.key;
 		if (tree.find(v) == tree.end()) {
 			// if v is not reached yet
 			tree[v] = PIL(u, time);
@@ -53,9 +54,8 @@ void dijkstra(const WDigraph& graph, int startVertex, unordered_map<int, PIL>& t
             	// the fire starts at v at time d and will reach nbr
 	            // at time d + (length of v->nbr edge)
 	            int burn = time + graph.getCost(v, nbr);
-	            events.insert(nbr, PIL(v, burn));
+	            events.insert(make_pair(nbr, v), burn);
             }
 		}
 	}
-
 }
