@@ -1,3 +1,10 @@
+/************************************
+Name: Celine Fong (1580124) 
+	  Claire Martin ()
+CMPUT 275, Winter Semester
+Major Assignment 1, Part 1
+************************************/
+
 #include "wdigraph.h"
 #include "dijkstra.h"
 #include <iostream>
@@ -157,19 +164,31 @@ int main() {
 
 	// initialize node count
 	int nodeCount = 1;
+
+	// start tracking back waypoints from the endpoint
 	int ID = endID;
+
+	// keep reading waypoint IDs until we reach the start point
 	while (ID != startID) {
+		// add new waypoint to the vector
 		waypoints.push_back(points[ID]);
 		ID = tree[ID].first;
 		nodeCount++;
 	}
+
+	// add start point to waypoint vector
 	waypoints.push_back(points[startID]);
 	cout << "N " << nodeCount << endl;
+
+	// iterate backwards through vector to get points from start to end
 	for (int i = nodeCount - 1; i >= 0; i--) {
+		// read in acknowledgment from client
 		cin >> startInput; // should be A
 		Point currPoint = waypoints[i];
+		// print waypoint to stdout
 		cout << "W " << currPoint.lat << " " << currPoint.lon << endl;
 	}
+	// program finish
 	cout << "E" << endl;
 	return 0;
 }

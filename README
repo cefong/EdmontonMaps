@@ -1,0 +1,33 @@
+Celine Fong, 1580124
+Claire Martin, 1571140
+Assignment #2, Part #1
+CMPUT 275, Winter 2020
+
+Included Files:
+	* README
+	* digraph.cpp
+	* digraph.h
+	* dijkstra.cpp
+	* dijkstra.h
+	* edmonton-roads-2.0.1.txt
+	* heap.h
+	* wdigraph.h
+	* server.cpp
+	* Makefile
+
+Running Instructions:
+	1. In the terminal, navigate into the directory containing all included files.
+	2. Type "make" into the command line, this will compile the necessary code.
+	3. Run the program using ./server
+
+Makefile Targets:
+	- make server: builds the server application, which depends on digraph.o, dijkstra.o, and server.o
+	- make digraph.o: builds the digraph object file
+	- make dijkstra.o: builds the dijkstra object file
+	- make server.o: builds the server object file
+	- make clean: removes all object files and executables
+
+Notes and Assumptions: 
+	This program reads in start and end points from the user and determines the shortest possible path between them using the directed graph provided in edmonton-roads-2.0.1.txt. It communicates the waypoints on the path to the client and waits for an acknowledgement before sending another waypoint. 
+
+	This program was built off of starter code provided on eClass, and previous solutions to weekly assignments.

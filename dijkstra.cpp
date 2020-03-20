@@ -1,3 +1,10 @@
+/************************************
+Name: Celine Fong (1580124) 
+	  Claire Martin (1571140)
+CMPUT 275, Winter Semester
+Major Assignment 1, Part 1
+************************************/
+
 #include "dijkstra.h"
 #include "heap.h"
 #include <unordered_map>
