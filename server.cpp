@@ -1,8 +1,8 @@
 /************************************
 Name: Celine Fong (1580124) 
-	  Claire Martin ()
+	  Claire Martin (1571140)
 CMPUT 275, Winter Semester
-Major Assignment 1, Part 1
+Major Assignment 2, Part 1
 ************************************/
 
 #include "wdigraph.h"
@@ -20,9 +20,14 @@ long long lon; // longitude of the point
 };
 
 long long manhattan(const Point& pt1, const Point& pt2) {
-	// Return the Manhattan distance between the two given points
-	// dist = |x1-x2| + |y1-y1|
-	// x = lat, y = lon
+/* 
+	Calculate the manhattan distance between two points
+
+	PARAMETERS:
+	pt1, pt2: Call-by-reference to two Point objects, each
+	with a latitute/longitude that is used to calculate
+	distance.
+*/
 
 	long long dist = abs(pt1.lat - pt2.lat) + abs(pt1.lon - pt2.lon);
 	return dist;
@@ -154,10 +159,6 @@ int main() {
 
 	// run dijkstra's from start vertex
 	dijkstra(graph, startID, tree);
-	// for (auto iter = tree.begin(); iter != tree.end(); ++iter) {
-	// 	cout << iter->first << " " << iter->second.first
-	// 	<< " " << iter->second.second << endl;
-	// }
 
 	// initialize vector to keep track of waypoints
 	vector <Point> waypoints;
@@ -179,7 +180,6 @@ int main() {
 	// add start point to waypoint vector
 	waypoints.push_back(points[startID]);
 	cout << "N " << nodeCount << endl;
-
 	// iterate backwards through vector to get points from start to end
 	for (int i = nodeCount - 1; i >= 0; i--) {
 		// read in acknowledgment from client
