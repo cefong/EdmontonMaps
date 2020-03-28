@@ -7,6 +7,8 @@ Major Assignment 2, Part 1
 
 #include "wdigraph.h"
 #include "dijkstra.h"
+#include "serialport.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -115,80 +117,143 @@ void readGraph(string filename, WDigraph& graph, unordered_map<int, Point>& poin
 }
 
 int main() {
+
 	// instantiate weighted digraph
 	WDigraph graph;
 	unordered_map<int, Point> points;
 	unordered_map<int, PIL> tree;
+
 	// read and create the graph
 	readGraph("edmonton-roads-2.0.1.txt", graph, points);
 
-	// read in input from stdin
-	char startInput;
-	cin >> startInput; // should be R
-	Point start;
-	cin >> start.lat >> start.lon; // read in first point
-	Point end;
-	cin >> end.lat >> end.lon; // read in second point
+	// instantiate SerialPort object
+    SerialPort Serial("/dev/ttyACM0");
+
+    // finite state machine
+	enum {WAIT_FOR_CLIENT, SEND_POINTS} curr_mode = WAIT_FOR_CLIENT;
+
+	// declare input string
+	string input;
 
 	long long shortestToStart;
 	long long shortestToEnd;
 	int startID, endID;
-
-	// find closest vertex to start point
-	for (auto iter = points.begin(); iter != points.end(); ++iter) {
-		long long distStart = manhattan(start, iter->second);
-		if (iter == points.begin()) {
-			shortestToStart = distStart;
-		}
-		if (distStart < shortestToStart) {
-			startID = iter->first;
-			shortestToStart = distStart;
-		}
-	}
-	// find closest vertex to end point
-	for (auto iter = points.begin(); iter != points.end(); ++iter) {
-		long long distEnd = manhattan(end, iter->second);
-		if (iter == points.begin()) {
-			shortestToEnd = distEnd;
-		}
-		if (distEnd < shortestToEnd) {
-			endID = iter->first;
-			shortestToEnd = distEnd;
-		}
-	}
-
-	// run dijkstra's from start vertex
-	dijkstra(graph, startID, tree);
-
+	int	currPointIndex = 1;
+	
 	// initialize vector to keep track of waypoints
 	vector <Point> waypoints;
 
 	// initialize node count
 	int nodeCount = 1;
 
-	// start tracking back waypoints from the endpoint
-	int ID = endID;
+	// set up loop to read requests and send points
+	while (true) {
+		if (curr_mode == WAIT_FOR_CLIENT) {
+			// if the server is currently waiting for a request	or acknowledgement
+			// read in current line
+			input = Serial.readline();
+			cout << "This was what the client said: " << input << " IIIIIII" << endl;
+			if (input[0] == 'R') {
+				// if the first letter of the string is R
+				// then it is the request and must read in request coordinates
 
-	// keep reading waypoint IDs until we reach the start point
-	while (ID != startID) {
-		// add new waypoint to the vector
-		waypoints.push_back(points[ID]);
-		ID = tree[ID].first;
-		nodeCount++;
+				// get locations of all spaces
+				int firstSpace = input.find(" ");
+				int secondSpace = input.find(" ", firstSpace + 1);
+				int thirdSpace = input.find(" ", secondSpace + 1);
+				int fourthSpace = input.find(" ", thirdSpace + 1);
+
+				// read in start point
+				Point start;
+				start.lat = stoll(input.substr(firstSpace + 1, secondSpace));
+				start.lon = stoll(input.substr(secondSpace + 1, thirdSpace));
+
+				// read in end point
+				Point end;
+				end.lat = stoll(input.substr(thirdSpace + 1, fourthSpace));
+				end.lon = stoll(input.substr(fourthSpace + 1, input.length()));
+
+				cout << start.lat << " " << start.lon << " " << end.lat << " " << end.lon << endl;
+				// find closest vertex to start point
+				for (auto iter = points.begin(); iter != points.end(); ++iter) {
+					long long distStart = manhattan(start, iter->second);
+					if (iter == points.begin()) {
+						shortestToStart = distStart;
+					}
+					if (distStart < shortestToStart) {
+						startID = iter->first;
+						shortestToStart = distStart;
+					}
+				}
+
+				// find closest vertex to end point
+				for (auto iter = points.begin(); iter != points.end(); ++iter) {
+					long long distEnd = manhattan(end, iter->second);
+					if (iter == points.begin()) {
+						shortestToEnd = distEnd;
+					}
+					if (distEnd < shortestToEnd) {
+						endID = iter->first;
+						shortestToEnd = distEnd;
+					}
+				}
+
+				// run dijkstra's from start vertex
+				dijkstra(graph, startID, tree);
+
+				// start tracking back waypoints from the endpoint
+				int ID = endID;
+
+				// keep reading waypoint IDs until we reach the start point
+				while (ID != startID) {
+					// add new waypoint to the vector
+					waypoints.push_back(points[ID]);
+					ID = tree[ID].first;
+					nodeCount++;
+				}
+
+				// add start point to waypoint vector
+				waypoints.push_back(points[startID]);
+
+				// print number of waypoints to serial
+				Serial.writeline(nodeCount + "\n");
+
+				cout << nodeCount << endl;
+			} else if (input[0] == 'A') {
+				// then we have received acknowledgement
+				// proceed to sending points
+				curr_mode = SEND_POINTS;
+			}
+		} else {
+			// then the server is sending points
+			// we must have received acknowledgment to have reached this state
+
+			// make sure we are not retriving waypoints outside of the array
+			if (currPointIndex <= nodeCount) {
+				// retrive the waypoint we are currently on
+				Point currPoint = waypoints[nodeCount - currPointIndex];
+
+				// increment index
+				currPointIndex++;
+
+				// print waypoint to Serial
+				Serial.writeline("W ");
+				Serial.writeline(to_string(currPoint.lat));
+				Serial.writeline(" ");
+				Serial.writeline(to_string(currPoint.lon));
+				Serial.writeline("\n");
+				cout << "W " << currPoint.lat << " " << currPoint.lon << endl;
+
+				if (currPointIndex == nodeCount + 1) {
+					// we have gone outside the bounds of the waypoint array
+					// this indicates the end of the waypoints
+					Serial.writeline("E\n");
+					cout << "E" << endl;
+				}
+			}
+			curr_mode = WAIT_FOR_CLIENT;
+		}
 	}
 
-	// add start point to waypoint vector
-	waypoints.push_back(points[startID]);
-	cout << "N " << nodeCount << endl;
-	// iterate backwards through vector to get points from start to end
-	for (int i = nodeCount - 1; i >= 0; i--) {
-		// read in acknowledgment from client
-		cin >> startInput; // should be A
-		Point currPoint = waypoints[i];
-		// print waypoint to stdout
-		cout << "W " << currPoint.lat << " " << currPoint.lon << endl;
-	}
-	// program finish
-	cout << "E" << endl;
 	return 0;
 }

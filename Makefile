@@ -1,5 +1,5 @@
 CC=g++
-OBJS= digraph.o dijkstra.o server.o
+OBJS= digraph.o dijkstra.o server.o serialport.o
 CFLAGS=-c -Wall -O2
 LFLAGS=-static
 PROGRAM=server
@@ -14,7 +14,11 @@ dijkstra.o: dijkstra.cpp dijkstra.h
 	$(CC) dijkstra.cpp -o dijkstra.o $(CFLAGS)
 
 server.o: server.cpp
-	$(CC) server.cpp -o server.o $(CFLAGS)	
+	$(CC) server.cpp -o server.o $(CFLAGS)
+
+serialport.o: serialport.cpp
+	$(CC) serialport.cpp -o serialport.o $(CFLAGS)
+
 clean:
 	@rm -f $(OBJS)
 	@rm -f $(PROGRAM)

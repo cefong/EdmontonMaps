@@ -24,16 +24,10 @@ void dijkstra(const WDigraph& graph, int startVertex, unordered_map<int, PIL>& t
 	startVertex: a vertex in this graph which serves as the root of the search tree
 	tree: a search tree used to construct the least cost path to some vertex
 */
-	// should be O(mlogm) time where m is number of edges in graph
-	// keys are predecessor vertices and times (int, long long)
-	// items are ID nums (int)
-
 	BinaryHeap<pair<int, int>, long long> events;
 	long long time;
 	int u, v;
-	// int is the vertex to be found
-	// PIL is <int, long long> where int is in format (u, d)
-	// PIPIL is <int, <int, long long>> in format (v, (u, d))
+	// events stores <u,v>, time
 	// fire burns from u to v in d time
 
 	events.insert(make_pair(startVertex, -1), 0);
